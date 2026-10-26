@@ -57,6 +57,15 @@ it('paginates proposals by ten and keeps the filters in the page links', functio
         ->assertJsonPath('links.prev', url('/api/proposals?search=laravel&page=1'));
 });
 
+it('ignores an empty tags filter', function () {
+    Proposal::factory()->create();
+
+    $this->actingAs($this->reviewer)
+        ->getJson('/api/proposals?tags=')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+});
+
 it('validates the filter parameters', function () {
     $this->actingAs($this->reviewer)
         ->getJson('/api/proposals?tags[]=abc')

@@ -10,4 +10,4 @@ Route::middleware('throttle:6,1')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
-Route::view('/{any?}', 'app')->where('any', '(?!api/).*');
+Route::view('/{any?}', 'app')->where('any', '(?!api/|docs/).*');

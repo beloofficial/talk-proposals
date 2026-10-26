@@ -30,6 +30,13 @@ it('creates new tags and reuses existing ones case-insensitively', function () {
         ->and(Proposal::sole()->tags->pluck('id'))->toContain($existing->id);
 });
 
+it('accepts an empty tags field', function () {
+    $this->actingAs(User::factory()->create())
+        ->post('/api/proposals', ['title' => 'T', 'description' => 'D', 'tags' => ''], ['Accept' => 'application/json'])
+        ->assertCreated()
+        ->assertJsonPath('data.tags', []);
+});
+
 it('accepts at most ten tags per proposal', function () {
     $this->actingAs(User::factory()->create())
         ->postJson('/api/proposals', [

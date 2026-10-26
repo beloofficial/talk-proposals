@@ -8,6 +8,7 @@ use App\Http\Resources\ProposalResource;
 use App\Models\Proposal;
 use App\Services\ProposalService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
@@ -23,21 +24,21 @@ class ProposalController extends Controller
         return ProposalResource::collection($this->proposals->listFor(
             $request->user(),
             $request->validated('search'),
-            $request->validated('tags', []),
+            $request->validated('tags') ?? [],
             $request->validated('review'),
         ));
     }
 
-    public function store(StoreProposalRequest $request): ProposalResource
+    public function store(StoreProposalRequest $request): JsonResponse
     {
         $proposal = $this->proposals->create(
             $request->user(),
             $request->safe()->only(['title', 'description']),
-            $request->validated('tags', []),
+            $request->validated('tags') ?? [],
             $request->file('file'),
         );
 
-        return new ProposalResource($proposal);
+        return (new ProposalResource($proposal))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Proposal $proposal): ProposalResource
