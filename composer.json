@@ -13,6 +13,7 @@
         "algolia/algoliasearch-client-php": "^4.0",
         "dedoc/scramble": "^0.13.50",
         "laravel/framework": "^13.17",
+        "laravel/reverb": "^1.12",
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^11.9",
         "laravel/tinker": "^3.0"
