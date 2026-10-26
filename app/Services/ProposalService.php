@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\ProposalStatus;
 use App\Enums\Role;
+use App\Events\ProposalStatusChanged;
+use App\Events\ProposalSubmitted;
 use App\Models\Proposal;
 use App\Models\Tag;
 use App\Models\User;
@@ -47,7 +49,7 @@ class ProposalService
         $path = $file?->store('proposals', 'local');
 
         try {
-            return DB::transaction(function () use ($speaker, $data, $tags, $path) {
+            $proposal = DB::transaction(function () use ($speaker, $data, $tags, $path) {
                 $proposal = $speaker->proposals()->create([...$data, 'file_path' => $path]);
 
                 $tagIds = array_map(fn (string $name) => Tag::firstOrCreate(['name' => $name])->id, $tags);
@@ -62,12 +64,20 @@ class ProposalService
 
             throw $e;
         }
+
+        ProposalSubmitted::dispatch($proposal);
+
+        return $proposal;
     }
 
     public function changeStatus(Proposal $proposal, ProposalStatus $status): Proposal
     {
         $proposal->status = $status;
         $proposal->save();
+
+        if ($proposal->wasChanged('status')) {
+            ProposalStatusChanged::dispatch($proposal);
+        }
 
         return $proposal;
     }
