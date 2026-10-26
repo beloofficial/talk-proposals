@@ -12,6 +12,7 @@ class ProposalRepository
     public function paginate(?User $speaker = null, int $perPage = 10): LengthAwarePaginator
     {
         return Proposal::query()
+            ->with('user')
             ->when($speaker, fn (Builder $query) => $query->whereBelongsTo($speaker))
             ->latest('id')
             ->paginate($perPage);

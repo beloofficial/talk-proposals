@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '@/pages/LoginPage.vue';
 import NewProposalPage from '@/pages/NewProposalPage.vue';
+import ProposalPage from '@/pages/ProposalPage.vue';
 import ProposalsPage from '@/pages/ProposalsPage.vue';
 import RegisterPage from '@/pages/RegisterPage.vue';
 import { useAuthStore } from '@/stores/auth';
@@ -23,6 +24,7 @@ const router = createRouter({
             component: NewProposalPage,
             meta: { roles: ['speaker'] },
         },
+        { path: '/proposals/:id(\\d+)', name: 'proposals.show', component: ProposalPage, props: true },
         { path: '/login', name: 'login', component: LoginPage, meta: { guest: true } },
         { path: '/register', name: 'register', component: RegisterPage, meta: { guest: true } },
         { path: '/:pathMatch(.*)*', redirect: { name: 'proposals' } },

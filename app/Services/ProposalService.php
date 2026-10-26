@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Proposal;
 use App\Models\User;
 use App\Repositories\ProposalRepository;
@@ -16,7 +17,9 @@ class ProposalService
 
     public function listFor(User $user): LengthAwarePaginator
     {
-        return $this->proposals->paginate(speaker: $user);
+        return $this->proposals->paginate(
+            speaker: $user->role === Role::Speaker ? $user : null,
+        );
     }
 
     /**

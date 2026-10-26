@@ -20,4 +20,5 @@ export interface Proposal {
     status: ProposalStatus;
     has_file: boolean;
     created_at: string;
+    speaker: User;
 }
