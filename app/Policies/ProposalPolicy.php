@@ -17,4 +17,14 @@ class ProposalPolicy
     {
         return $user->role === Role::Speaker;
     }
+
+    public function review(User $user): bool
+    {
+        return $user->role === Role::Reviewer;
+    }
+
+    public function updateStatus(User $user): bool
+    {
+        return $user->role === Role::Admin;
+    }
 }

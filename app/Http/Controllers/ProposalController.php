@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProposalRequest;
 use App\Http\Resources\ProposalResource;
 use App\Models\Proposal;
 use App\Services\ProposalService;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -39,7 +40,11 @@ class ProposalController extends Controller
 
     public function show(Proposal $proposal): ProposalResource
     {
-        return new ProposalResource($proposal);
+        $proposal->load(['reviews' => fn (HasMany $query) => $query->with('user')->latest('id')]);
+
+        return (new ProposalResource($proposal))->additional([
+            'meta' => ['max_rating' => config('reviews.max_rating')],
+        ]);
     }
 
     public function download(Proposal $proposal): StreamedResponse

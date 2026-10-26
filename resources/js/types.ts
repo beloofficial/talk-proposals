@@ -27,4 +27,13 @@ export interface Proposal {
     created_at: string;
     speaker: User;
     tags: Tag[];
+    reviews?: Review[];
+}
+
+export interface Review {
+    id: number;
+    rating: number;
+    comment: string | null;
+    reviewer: User;
+    updated_at: string;
 }

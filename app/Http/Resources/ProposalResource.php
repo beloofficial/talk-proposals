@@ -23,6 +23,7 @@ class ProposalResource extends JsonResource
             'created_at' => $this->created_at,
             'speaker' => new UserResource($this->user),
             'tags' => TagResource::collection($this->tags),
+            'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
         ];
     }
 }

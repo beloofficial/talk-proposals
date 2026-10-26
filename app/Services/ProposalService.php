@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ProposalStatus;
 use App\Enums\Role;
 use App\Models\Proposal;
 use App\Models\Tag;
@@ -53,5 +54,13 @@ class ProposalService
 
             throw $e;
         }
+    }
+
+    public function changeStatus(Proposal $proposal, ProposalStatus $status): Proposal
+    {
+        $proposal->status = $status;
+        $proposal->save();
+
+        return $proposal;
     }
 }
