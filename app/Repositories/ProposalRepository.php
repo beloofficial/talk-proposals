@@ -26,7 +26,7 @@ class ProposalRepository
             ->with(['user', 'tags'])
             ->withCount('reviews')
             ->when($speaker, fn (Builder $query) => $query->whereBelongsTo($speaker))
-            ->when($search, fn (Builder $query) => $query->whereLike('title', "%{$search}%"))
+            ->when($search, fn (Builder $query) => $query->whereKey(Proposal::search($search)->take(1000)->keys()))
             ->when($tagIds, fn (Builder $query) => $query->whereHas('tags', fn (Builder $query) => $query->whereKey($tagIds)))
             ->when($reviewer && $reviewed === true, fn (Builder $query) => $query->whereHas('reviews', $byReviewer))
             ->when($reviewer && $reviewed === false, fn (Builder $query) => $query->whereDoesntHave('reviews', $byReviewer))

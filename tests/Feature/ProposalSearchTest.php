@@ -22,6 +22,12 @@ it('filters proposals that have at least one of the given tags', function () {
         ->assertJsonPath('data.*.id', [$bothTalk->id, $goTalk->id, $phpTalk->id]);
 });
 
+it('sends only the title to the search index', function () {
+    $proposal = Proposal::factory()->make(['title' => 'Scaling Laravel', 'description' => 'Private notes']);
+
+    expect($proposal->toSearchableArray())->toBe(['title' => 'Scaling Laravel']);
+});
+
 it('searches proposals by title, case-insensitively', function () {
     $match = Proposal::factory()->create(['title' => 'Scaling Laravel queues']);
     Proposal::factory()->create(['title' => 'Intro to Go', 'description' => 'Laravel is only in the description.']);

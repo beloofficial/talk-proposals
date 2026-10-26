@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 
 #[Fillable(['title', 'description', 'file_path'])]
 class Proposal extends Model
 {
     /** @use HasFactory<ProposalFactory> */
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $attributes = [
         'status' => ProposalStatus::Pending->value,
@@ -30,6 +31,16 @@ class Proposal extends Model
     {
         return [
             'status' => ProposalStatus::class,
+        ];
+    }
+
+    /**
+     * @return array{title: string}
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'title' => $this->title,
         ];
     }
 
