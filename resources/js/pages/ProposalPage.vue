@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import ReviewForm from '@/components/ReviewForm.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { http } from '@/http';
+import { onProposalChange } from '@/realtime';
 import { useAuthStore } from '@/stores/auth';
 import type { Proposal, ProposalStatus, Resource, Review } from '@/types';
 
@@ -27,7 +28,7 @@ const averageRating = computed(() => {
     return reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : null;
 });
 
-onMounted(async () => {
+async function loadProposal() {
     try {
         const { data } = await http.get<Resource<Proposal> & { meta: { max_rating: number } }>(
             `/api/proposals/${props.id}`,
@@ -36,6 +37,14 @@ onMounted(async () => {
         maxRating.value = data.meta.max_rating;
     } catch {
         failed.value = true;
+    }
+}
+
+onMounted(loadProposal);
+
+onProposalChange((proposalId) => {
+    if (proposalId === Number(props.id)) {
+        loadProposal();
     }
 });
 

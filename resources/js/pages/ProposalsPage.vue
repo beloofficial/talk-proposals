@@ -5,6 +5,7 @@ import Pagination from '@/components/Pagination.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import TagInput from '@/components/TagInput.vue';
 import { http } from '@/http';
+import { onProposalChange } from '@/realtime';
 import { useAuthStore } from '@/stores/auth';
 import type { Paginated, Proposal, Resource, ReviewTab, Tag } from '@/types';
 
@@ -86,6 +87,8 @@ watch(search, () => {
 watch([selectedTagNames, reviewTab], applyFilters);
 
 onMounted(() => Promise.all([loadProposals(), loadTags()]));
+
+onProposalChange(loadProposals);
 </script>
 
 <template>
