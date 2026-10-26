@@ -30,6 +30,17 @@ it('creates new tags and reuses existing ones case-insensitively', function () {
         ->and(Proposal::sole()->tags->pluck('id'))->toContain($existing->id);
 });
 
+it('accepts at most ten tags per proposal', function () {
+    $this->actingAs(User::factory()->create())
+        ->postJson('/api/proposals', [
+            'title' => 'T',
+            'description' => 'D',
+            'tags' => array_map(fn (int $number) => "Tag {$number}", range(1, 11)),
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('tags');
+});
+
 it('rejects duplicate and overlong tags', function () {
     $this->actingAs(User::factory()->create())
         ->postJson('/api/proposals', [
