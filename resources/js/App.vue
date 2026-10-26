@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import NotificationToasts from '@/components/NotificationToasts.vue';
 import { requestError } from '@/http';
+import { startRealtime, stopRealtime } from '@/realtime';
 import { useAuthStore } from '@/stores/auth';
 
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
+
+watch(
+    () => auth.user,
+    (user) => {
+        stopRealtime();
+
+        if (user) {
+            startRealtime(user);
+        }
+    },
+    { immediate: true },
+);
 
 async function logout() {
     await auth.logout();
@@ -48,6 +64,8 @@ async function logout() {
     </div>
 
     <main class="mx-auto max-w-5xl px-4 py-8">
-        <RouterView />
+        <RouterView :key="route.path" />
     </main>
+
+    <NotificationToasts />
 </template>
