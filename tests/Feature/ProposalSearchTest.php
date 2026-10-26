@@ -44,6 +44,19 @@ it('keeps a speaker\'s search and filter within their own proposals', function (
         ->assertJsonPath('data.*.id', [$own->id]);
 });
 
+it('paginates proposals by ten and keeps the filters in the page links', function () {
+    Proposal::factory(12)->create(['title' => 'Laravel talk']);
+
+    $this->actingAs($this->reviewer)
+        ->getJson('/api/proposals?search=laravel&page=2')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('meta.current_page', 2)
+        ->assertJsonPath('meta.last_page', 2)
+        ->assertJsonPath('meta.total', 12)
+        ->assertJsonPath('links.prev', url('/api/proposals?search=laravel&page=1'));
+});
+
 it('validates the filter parameters', function () {
     $this->actingAs($this->reviewer)
         ->getJson('/api/proposals?tags[]=abc')

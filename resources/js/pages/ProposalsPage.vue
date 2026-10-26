@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import Pagination from '@/components/Pagination.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import TagInput from '@/components/TagInput.vue';
 import { http } from '@/http';
 import { useAuthStore } from '@/stores/auth';
-import type { Proposal, Resource, Tag } from '@/types';
+import type { Paginated, Proposal, Resource, Tag } from '@/types';
 
 const auth = useAuthStore();
 const isSpeaker = computed(() => auth.user?.role === 'speaker');
@@ -15,22 +16,43 @@ const tags = ref<Tag[]>([]);
 const search = ref('');
 const selectedTagNames = ref<string[]>([]);
 const filtered = computed(() => search.value !== '' || selectedTagNames.value.length > 0);
+const page = ref(1);
+const lastPage = ref(1);
 
 let latestRequest = 0;
 
 async function loadProposals() {
     const request = ++latestRequest;
-    const { data } = await http.get<Resource<Proposal[]>>('/api/proposals', {
-        params: {
-            search: search.value || undefined,
-            tags: tags.value.filter((tag) => selectedTagNames.value.includes(tag.name)).map((tag) => tag.id),
-        },
-    });
 
-    if (request === latestRequest) {
-        proposals.value = data.data;
-        loading.value = false;
+    try {
+        const { data } = await http.get<Paginated<Proposal>>('/api/proposals', {
+            params: {
+                page: page.value,
+                search: search.value || undefined,
+                tags: tags.value.filter((tag) => selectedTagNames.value.includes(tag.name)).map((tag) => tag.id),
+            },
+        });
+
+        if (request === latestRequest) {
+            proposals.value = data.data;
+            lastPage.value = data.meta.last_page;
+        }
+    } finally {
+        if (request === latestRequest) {
+            loading.value = false;
+        }
     }
+}
+
+function applyFilters() {
+    page.value = 1;
+    loadProposals();
+}
+
+function goToPage(target: number) {
+    page.value = target;
+    loadProposals();
+    window.scrollTo({ top: 0 });
 }
 
 async function loadTags() {
@@ -42,9 +64,9 @@ let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
 watch(search, () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(loadProposals, 300);
+    searchTimer = setTimeout(applyFilters, 300);
 });
-watch(selectedTagNames, loadProposals);
+watch(selectedTagNames, applyFilters);
 
 onMounted(() => Promise.all([loadProposals(), loadTags()]));
 </script>
@@ -106,4 +128,6 @@ onMounted(() => Promise.all([loadProposals(), loadTags()]));
             </RouterLink>
         </li>
     </ul>
+
+    <Pagination :page="page" :last-page="lastPage" @change="goToPage" />
 </template>
