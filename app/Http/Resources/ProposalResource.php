@@ -24,6 +24,10 @@ class ProposalResource extends JsonResource
             'speaker' => new UserResource($this->user),
             'tags' => TagResource::collection($this->tags),
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
+            'reviews_count' => $this->when(
+                $request->user()->can('viewReviews', $this->resource),
+                fn () => $this->whenCounted('reviews'),
+            ),
         ];
     }
 }

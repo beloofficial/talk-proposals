@@ -55,7 +55,7 @@ it('forbids speakers and admins to review', function (User $user) {
     'admin' => fn () => User::factory()->admin()->create(),
 ]);
 
-it('shows reviews to everyone who can see the proposal', function (User $user) {
+it('shows reviews to reviewers and admins', function (User $user) {
     Review::factory()->for($this->proposal)->for($this->reviewer)->create(['rating' => 3]);
 
     $this->actingAs($user)
@@ -65,7 +65,15 @@ it('shows reviews to everyone who can see the proposal', function (User $user) {
         ->assertJsonPath('data.reviews.0.reviewer.name', $this->reviewer->name)
         ->assertJsonPath('meta.max_rating', 5);
 })->with([
-    'the proposal\'s speaker' => fn () => $this->proposal->user,
     'reviewer' => fn () => User::factory()->reviewer()->create(),
     'admin' => fn () => User::factory()->admin()->create(),
 ]);
+
+it('hides reviews from the speaker', function () {
+    Review::factory()->for($this->proposal)->for($this->reviewer)->create();
+
+    $this->actingAs($this->proposal->user)
+        ->getJson("/api/proposals/{$this->proposal->id}")
+        ->assertOk()
+        ->assertJsonMissingPath('data.reviews');
+});

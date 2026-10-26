@@ -20,6 +20,8 @@ export interface Paginated<T> {
     };
 }
 
+export type ReviewTab = 'all' | 'pending' | 'done';
+
 export interface Tag {
     id: number;
     name: string;
@@ -37,6 +39,7 @@ export interface Proposal {
     speaker: User;
     tags: Tag[];
     reviews?: Review[];
+    reviews_count?: number;
 }
 
 export interface Review {

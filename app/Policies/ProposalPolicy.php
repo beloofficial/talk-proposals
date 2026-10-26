@@ -18,6 +18,11 @@ class ProposalPolicy
         return $user->role === Role::Speaker;
     }
 
+    public function viewReviews(User $user): bool
+    {
+        return $user->role !== Role::Speaker;
+    }
+
     public function review(User $user): bool
     {
         return $user->role === Role::Reviewer;

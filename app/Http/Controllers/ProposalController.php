@@ -8,6 +8,7 @@ use App\Http\Resources\ProposalResource;
 use App\Models\Proposal;
 use App\Services\ProposalService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -23,6 +24,7 @@ class ProposalController extends Controller
             $request->user(),
             $request->validated('search'),
             $request->validated('tags', []),
+            $request->validated('review'),
         ));
     }
 
@@ -38,9 +40,11 @@ class ProposalController extends Controller
         return new ProposalResource($proposal);
     }
 
-    public function show(Proposal $proposal): ProposalResource
+    public function show(Request $request, Proposal $proposal): ProposalResource
     {
-        $proposal->load(['reviews' => fn (HasMany $query) => $query->with('user')->latest('id')]);
+        if ($request->user()->can('viewReviews', $proposal)) {
+            $proposal->load(['reviews' => fn (HasMany $query) => $query->with('user')->latest('id')]);
+        }
 
         return (new ProposalResource($proposal))->additional([
             'meta' => ['max_rating' => config('reviews.max_rating')],

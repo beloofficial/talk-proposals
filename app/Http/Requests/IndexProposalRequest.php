@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IndexProposalRequest extends FormRequest
 {
@@ -18,6 +19,7 @@ class IndexProposalRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['integer'],
+            'review' => ['nullable', Rule::in(['pending', 'done'])],
         ];
     }
 }

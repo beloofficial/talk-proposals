@@ -21,12 +21,20 @@ class ProposalService
     /**
      * @param  list<int|string>  $tagIds
      */
-    public function listFor(User $user, ?string $search = null, array $tagIds = []): LengthAwarePaginator
-    {
+    public function listFor(
+        User $user,
+        ?string $search = null,
+        array $tagIds = [],
+        ?string $review = null,
+    ): LengthAwarePaginator {
+        $reviewer = $user->role === Role::Reviewer ? $user : null;
+
         return $this->proposals->paginate(
             speaker: $user->role === Role::Speaker ? $user : null,
+            reviewer: $reviewer,
             search: $search,
             tagIds: $tagIds,
+            reviewed: $reviewer && $review ? $review === 'done' : null,
         );
     }
 
