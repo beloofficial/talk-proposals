@@ -26,6 +26,7 @@ Laravel 13 JSON API with a Vue 3 single-page app, running entirely in Docker thr
 ## Requirements
 
 Docker Desktop, or Docker Engine with Compose v2. PHP, Composer and Node run inside the containers, so nothing else is needed on the host.
+The shortcuts below use `make`, which ships with Linux and with the Xcode Command Line Tools on macOS; every step also has a plain command.
 
 The app uses these host ports: `80` (web), `3306` (MySQL), `5173` (Vite dev server) and `8080` (Reverb WebSockets).
 If one is taken, override it in `.env` with `APP_PORT`, `FORWARD_DB_PORT`, `VITE_PORT` or `REVERB_PORT`.
@@ -35,12 +36,18 @@ If one is taken, override it in `.env` with `APP_PORT`, `FORWARD_DB_PORT`, `VITE
 ```bash
 git clone <repository-url> talk-proposals
 cd talk-proposals
-cp .env.example .env
+make setup
+```
 
-# Install PHP dependencies with a throwaway Composer container (Sail itself lives in vendor/).
+`make setup` copies `.env.example` to `.env`, installs PHP dependencies with a throwaway Composer container (Sail itself lives in `vendor/`), starts the containers, generates the app key, migrates and seeds the database and builds the frontend.
+Running it again is safe: it skips the steps that are already done and never re-seeds an existing database.
+
+Without `make`, run the same steps by hand:
+
+```bash
+cp .env.example .env
 docker run --rm -u "$(id -u):$(id -g)" -v "$(pwd):/var/www/html" -w /var/www/html \
     laravelsail/php84-composer:latest composer install --ignore-platform-reqs
-
 ./vendor/bin/sail up -d --wait
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
@@ -77,13 +84,20 @@ To see real-time notifications, log in as two roles in two browser profiles (for
 ## Everyday commands
 
 ```bash
-sail npm run dev          # Vite with hot reload; keep using http://localhost
-sail test                 # Pest test suite
-sail test --coverage      # with a line coverage report
+make up        # start the containers
+make dev       # Vite with hot reload; keep using http://localhost
+make test      # Pest test suite
+make fresh     # reset the demo data
+make logs      # watch WebSocket and queue activity
+make down      # stop the containers (data is kept in a Docker volume)
+make           # list all shortcuts
+```
+
+Anything else goes through Sail directly, for example:
+
+```bash
+sail test --coverage      # tests with a line coverage report
 sail pint                 # code style
-sail artisan migrate:fresh --seed   # reset the demo data
-sail logs -f reverb queue           # watch WebSocket and queue activity
-sail down                 # stop the containers (data is kept in a Docker volume)
 ```
 
 ## Search with Algolia (optional)
