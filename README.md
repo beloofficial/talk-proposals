@@ -4,6 +4,7 @@ A talk proposal review app: speakers submit talk proposals, reviewers rate them,
 Laravel 13 JSON API with a Vue 3 single-page app, running entirely in Docker through Laravel Sail.
 
 Design decisions, permissions and trade-offs are described in [docs/architecture.md](docs/architecture.md).
+Production build and deployment are covered in [docs/deployment.md](docs/deployment.md).
 
 ## Features
 
@@ -135,7 +136,7 @@ app/
   Policies/       ProposalPolicy (who can view, create, review, change status)
   Repositories/   query logic: filters, search, pagination
   Services/       business rules: create, review, change status
-docs/             architecture notes
+docs/             architecture and deployment notes
 resources/js/     Vue SPA (pages, components, Pinia stores, router, realtime)
 routes/           web.php (SPA + session auth), api.php, channels.php
 tests/Feature/    Pest tests, including architecture rules
