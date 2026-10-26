@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Proposal;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -37,6 +38,22 @@ it('accepts a proposal without a file', function () {
         ->postJson('/api/proposals', ['title' => 'No slides', 'description' => 'Just talking.'])
         ->assertCreated()
         ->assertJsonPath('data.has_file', false);
+});
+
+it('rolls back the proposal and removes its file when saving tags fails', function () {
+    Tag::created(fn () => throw new RuntimeException('Tag storage is down'));
+
+    $this->actingAs(User::factory()->create())
+        ->postJson('/api/proposals', [
+            'title' => 'T',
+            'description' => 'D',
+            'file' => UploadedFile::fake()->create('talk.pdf', 10, 'application/pdf'),
+            'tags' => ['Brand new tag'],
+        ])
+        ->assertServerError();
+
+    expect(Proposal::count())->toBe(0)->and(Tag::count())->toBe(0);
+    Storage::disk('local')->assertDirectoryEmpty('proposals');
 });
 
 it('validates the proposal', function (array $input, array $errors) {

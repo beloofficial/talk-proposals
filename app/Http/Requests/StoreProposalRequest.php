@@ -19,6 +19,20 @@ class StoreProposalRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'file' => ['nullable', File::types(['pdf'])->max(4 * 1024)],
+            'tags' => ['nullable', 'array', 'max:10'],
+            'tags.*' => ['required', 'string', 'max:50', 'distinct:ignore_case'],
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'tags.*' => 'tag',
         ];
     }
 }

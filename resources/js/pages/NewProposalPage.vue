@@ -1,18 +1,31 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import TagInput from '@/components/TagInput.vue';
 import TextInput from '@/components/TextInput.vue';
 import { http, validationErrors, type ValidationErrors } from '@/http';
+import type { Resource, Tag } from '@/types';
 
 const router = useRouter();
 
-const form = reactive<{ title: string; description: string; file: File | null }>({
+const form = reactive<{ title: string; description: string; tags: string[]; file: File | null }>({
     title: '',
     description: '',
+    tags: [],
     file: null,
 });
 const errors = ref<ValidationErrors>({});
 const processing = ref(false);
+const tagSuggestions = ref<string[]>([]);
+
+const tagsError = computed(
+    () => Object.entries(errors.value).find(([field]) => field === 'tags' || field.startsWith('tags.'))?.[1][0],
+);
+
+onMounted(async () => {
+    const { data } = await http.get<Resource<Tag[]>>('/api/tags');
+    tagSuggestions.value = data.data.map((tag) => tag.name);
+});
 
 function pickFile(event: Event) {
     form.file = (event.target as HTMLInputElement).files?.[0] ?? null;
@@ -51,6 +64,14 @@ async function submit() {
                     {{ errors.description[0] }}
                 </span>
             </label>
+
+            <TagInput
+                v-model="form.tags"
+                label="Tags (optional)"
+                :suggestions="tagSuggestions"
+                allow-new
+                :error="tagsError"
+            />
 
             <label class="block">
                 <span class="text-sm font-medium text-slate-700">Attachment (PDF up to 4 MB, optional)</span>

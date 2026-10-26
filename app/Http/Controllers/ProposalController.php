@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexProposalRequest;
 use App\Http\Requests\StoreProposalRequest;
 use App\Http\Resources\ProposalResource;
 use App\Models\Proposal;
 use App\Services\ProposalService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,9 +16,13 @@ class ProposalController extends Controller
 {
     public function __construct(private ProposalService $proposals) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexProposalRequest $request): AnonymousResourceCollection
     {
-        return ProposalResource::collection($this->proposals->listFor($request->user()));
+        return ProposalResource::collection($this->proposals->listFor(
+            $request->user(),
+            $request->validated('search'),
+            $request->validated('tags', []),
+        ));
     }
 
     public function store(StoreProposalRequest $request): ProposalResource
@@ -26,6 +30,7 @@ class ProposalController extends Controller
         $proposal = $this->proposals->create(
             $request->user(),
             $request->safe()->only(['title', 'description']),
+            $request->validated('tags', []),
             $request->file('file'),
         );
 

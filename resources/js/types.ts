@@ -11,6 +11,11 @@ export interface Resource<T> {
     data: T;
 }
 
+export interface Tag {
+    id: number;
+    name: string;
+}
+
 export type ProposalStatus = 'pending' | 'approved' | 'rejected';
 
 export interface Proposal {
@@ -21,4 +26,5 @@ export interface Proposal {
     has_file: boolean;
     created_at: string;
     speaker: User;
+    tags: Tag[];
 }

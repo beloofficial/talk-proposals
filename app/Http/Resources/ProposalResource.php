@@ -22,6 +22,7 @@ class ProposalResource extends JsonResource
             'has_file' => $this->file_path !== null,
             'created_at' => $this->created_at,
             'speaker' => new UserResource($this->user),
+            'tags' => TagResource::collection($this->tags),
         ];
     }
 }

@@ -33,6 +33,11 @@ onMounted(async () => {
         <p class="mt-1 text-sm text-slate-500">
             {{ proposal.speaker.name }} · {{ new Date(proposal.created_at).toLocaleDateString() }}
         </p>
+        <div v-if="proposal.tags.length" class="mt-3 flex flex-wrap gap-1">
+            <span v-for="tag in proposal.tags" :key="tag.id" class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                {{ tag.name }}
+            </span>
+        </div>
 
         <p class="mt-4 whitespace-pre-line text-slate-700">{{ proposal.description }}</p>
 
