@@ -1,58 +1,125 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Talk Proposals
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A talk proposal review app: speakers submit talk proposals, reviewers rate them, administrators decide.
+Laravel 13 JSON API with a Vue 3 single-page app, running entirely in Docker through Laravel Sail.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Accounts and roles.** Registration with a role (Speaker, Reviewer, Administrator) and session login through Sanctum in SPA mode.
+- **Submission.** Speakers submit a title, description, tags (pick existing or create new) and an optional PDF up to 4 MB, kept on a private disk.
+- **Review.** Reviewers see every proposal, rate it from 1 to 5 and leave a comment. One review per reviewer, editable. To review / Reviewed tabs.
+- **Decision.** Administrators set the status: pending, approved or rejected. Speakers see the status of their own proposals, not the reviews.
+- **List.** Filter by tags (matches any selected tag), search by title, pagination, responsive layout.
+- **Search.** Title search through Laravel Scout: Algolia when keys are set, a database fallback otherwise.
+- **Real-time.** WebSocket notifications through Laravel Reverb and Echo when a proposal is submitted, reviewed or its status changes. Open pages refresh on their own.
+- **API documentation.** OpenAPI generated from the code with Scramble.
+- **Tests.** Pest feature and architecture tests with full line coverage.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Tools |
+|---|---|
+| Backend | PHP 8.5, Laravel 13, MySQL 8.4, Sanctum, Scout + Algolia, Reverb, Scramble |
+| Frontend | Vue 3, TypeScript, Vue Router, Pinia, axios, Tailwind CSS 4, Vite, Laravel Echo |
+| Tooling | Laravel Sail (Docker), Pest, Pint |
 
-## Learning Laravel
+## Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Docker Desktop, or Docker Engine with Compose v2. PHP, Composer and Node run inside the containers, so nothing else is needed on the host.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The app uses these host ports: `80` (web), `3306` (MySQL), `5173` (Vite dev server) and `8080` (Reverb WebSockets).
+If one is taken, override it in `.env` with `APP_PORT`, `FORWARD_DB_PORT`, `VITE_PORT` or `REVERB_PORT`.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quick start
 
 ```bash
-composer require laravel/boost --dev
+git clone <repository-url> talk-proposals
+cd talk-proposals
+cp .env.example .env
 
-php artisan boost:install
+# Install PHP dependencies with a throwaway Composer container (Sail itself lives in vendor/).
+docker run --rm -u "$(id -u):$(id -g)" -v "$(pwd):/var/www/html" -w /var/www/html \
+    laravelsail/php84-composer:latest composer install --ignore-platform-reqs
+
+./vendor/bin/sail up -d --wait
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Open http://localhost. The first `sail up` builds the application image and takes a few minutes; `--wait` returns once MySQL is ready, so the migration does not race the database start-up.
 
-## Contributing
+`sail up` starts four containers:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Container | Purpose |
+|---|---|
+| `laravel.test` | the app and API on port 80 |
+| `mysql` | the database |
+| `reverb` | the WebSocket server on port 8080 |
+| `queue` | the queue worker that sends real-time events |
 
-## Code of Conduct
+Tip: `alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'` lets you type `sail` instead of `./vendor/bin/sail`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Demo accounts
 
-## Security Vulnerabilities
+Every seeded user has the password `password`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role | Email |
+|---|---|
+| Speaker | `speaker@example.com` |
+| Reviewer | `reviewer@example.com` |
+| Administrator | `admin@example.com` |
 
-## License
+The seeder also creates a few more speakers and reviewers, 15 proposals, tags and reviews.
+To see real-time notifications, log in as two roles in two browser profiles (for example, a normal and a private window).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Everyday commands
+
+```bash
+sail npm run dev          # Vite with hot reload; keep using http://localhost
+sail test                 # Pest test suite
+sail test --coverage      # with a line coverage report
+sail pint                 # code style
+sail artisan migrate:fresh --seed   # reset the demo data
+sail logs -f reverb queue           # watch WebSocket and queue activity
+sail down                 # stop the containers (data is kept in a Docker volume)
+```
+
+## Search with Algolia (optional)
+
+Out of the box `SCOUT_DRIVER=database` searches titles with SQL. For typo-tolerant search:
+
+1. Create a free Algolia application and copy its Application ID and Admin API key.
+2. Set them in `.env`:
+   ```
+   SCOUT_DRIVER=algolia
+   ALGOLIA_APP_ID=your-app-id
+   ALGOLIA_SECRET=your-admin-api-key
+   ```
+3. Index the existing proposals: `sail artisan scout:import "App\Models\Proposal"`.
+
+New and changed proposals are indexed automatically. Tests always use the in-memory `collection` driver.
+
+## API documentation
+
+With the app running locally, open http://localhost/docs/api for interactive docs, or http://localhost/docs/api.json for the OpenAPI document.
+They are available only when `APP_ENV=local`.
+
+The API authenticates with the Laravel session cookie (Sanctum SPA mode): call `POST /login`, then send the `XSRF-TOKEN` cookie back in the `X-XSRF-TOKEN` header on non-GET requests.
+
+## Project layout
+
+```
+app/
+  Enums/          Role, ProposalStatus
+  Events/         broadcast events (submitted, reviewed, status changed)
+  Http/           controllers, form requests, API resources
+  Models/         User, Proposal, Tag, Review
+  Policies/       ProposalPolicy (who can view, create, review, change status)
+  Repositories/   query logic: filters, search, pagination
+  Services/       business rules: create, review, change status
+resources/js/     Vue SPA (pages, components, Pinia stores, router, realtime)
+routes/           web.php (SPA + session auth), api.php, channels.php
+tests/Feature/    Pest tests, including architecture rules
+```
