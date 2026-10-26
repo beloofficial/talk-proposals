@@ -14,7 +14,7 @@ async function logout() {
 <template>
     <header v-if="auth.user" class="border-b border-slate-200 bg-white">
         <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-            <RouterLink :to="{ name: 'home' }" class="font-semibold">Talk Proposals</RouterLink>
+            <RouterLink :to="{ name: 'proposals' }" class="font-semibold">Talk Proposals</RouterLink>
 
             <div class="flex items-center gap-4 text-sm">
                 <span>

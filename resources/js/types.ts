@@ -10,3 +10,14 @@ export interface User {
 export interface Resource<T> {
     data: T;
 }
+
+export type ProposalStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Proposal {
+    id: number;
+    title: string;
+    description: string;
+    status: ProposalStatus;
+    has_file: boolean;
+    created_at: string;
+}

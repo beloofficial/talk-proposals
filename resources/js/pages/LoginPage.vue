@@ -18,7 +18,7 @@ async function submit() {
 
     try {
         await auth.login(form);
-        await router.push({ name: 'home' });
+        await router.push({ name: 'proposals' });
     } catch (error) {
         errors.value = validationErrors(error);
     } finally {
