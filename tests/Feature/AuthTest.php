@@ -73,6 +73,7 @@ it('returns the current user', function () {
         ->getJson('/api/me')
         ->assertOk()
         ->assertJsonPath('data.id', $user->id)
+        ->assertJsonPath('data.email', $user->email)
         ->assertJsonPath('data.role', 'admin');
 });
 

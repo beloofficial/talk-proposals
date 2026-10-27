@@ -22,7 +22,7 @@ Production build and deployment are covered in [docs/deployment.md](docs/deploym
 
 | Layer | Tools |
 |---|---|
-| Backend | PHP 8.5, Laravel 13, MySQL 8.4, Sanctum, Scout + Algolia, Reverb, Scramble |
+| Backend | PHP 8.4+ (Sail runs 8.5), Laravel 13, MySQL 8.4, Sanctum, Scout + Algolia, Reverb, Scramble |
 | Frontend | Vue 3, TypeScript, Vue Router, Pinia, axios, Tailwind CSS 4, Vite, Laravel Echo |
 | Tooling | Laravel Sail (Docker), Pest, Pint |
 
@@ -67,7 +67,7 @@ Open http://localhost. The first `sail up` builds the application image and take
 | `laravel.test` | the app and API on port 80 |
 | `mysql` | the database |
 | `reverb` | the WebSocket server on port 8080 |
-| `queue` | the queue worker that sends real-time events |
+| `queue` | the queue worker that sends real-time events and updates the search index |
 
 Tip: `alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'` lets you type `sail` instead of `./vendor/bin/sail`.
 
@@ -116,7 +116,7 @@ Out of the box `SCOUT_DRIVER=database` searches titles with SQL. For typo-tolera
    ```
 3. Index the existing proposals: `sail artisan scout:import "App\Models\Proposal"`.
 
-New and changed proposals are indexed automatically. Tests always use the in-memory `collection` driver.
+New and changed proposals are indexed automatically by the queue worker. Tests always use the in-memory `collection` driver.
 
 ## API documentation
 

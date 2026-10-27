@@ -3,6 +3,8 @@
 use App\Models\Proposal;
 use App\Models\Tag;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
+use Laravel\Scout\Jobs\MakeSearchable;
 
 beforeEach(function () {
     $this->reviewer = User::factory()->reviewer()->create();
@@ -26,6 +28,27 @@ it('sends only the title to the search index', function () {
     $proposal = Proposal::factory()->make(['title' => 'Scaling Laravel', 'description' => 'Private notes']);
 
     expect($proposal->toSearchableArray())->toBe(['title' => 'Scaling Laravel']);
+});
+
+it('indexes a submitted proposal through the queue', function () {
+    Queue::fake();
+
+    $this->actingAs(User::factory()->create())
+        ->postJson('/api/proposals', ['title' => 'Queued talk', 'description' => 'D'])
+        ->assertCreated();
+
+    Queue::assertPushed(MakeSearchable::class, fn (MakeSearchable $job) => $job->models->first()->title === 'Queued talk');
+});
+
+it('does not index a proposal whose transaction was rolled back', function () {
+    Queue::fake();
+    Tag::created(fn () => throw new RuntimeException('Tag storage is down'));
+
+    $this->actingAs(User::factory()->create())
+        ->postJson('/api/proposals', ['title' => 'Lost talk', 'description' => 'D', 'tags' => ['Brand new tag']])
+        ->assertServerError();
+
+    Queue::assertNotPushed(MakeSearchable::class);
 });
 
 it('searches proposals by title, case-insensitively', function () {

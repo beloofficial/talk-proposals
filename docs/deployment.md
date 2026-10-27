@@ -8,7 +8,7 @@ For local setup see the [README](../README.md); for design decisions see [archit
 | Process | Command | Purpose |
 |---|---|---|
 | Web | nginx + PHP-FPM | serves the SPA and the API from `public/` |
-| Queue worker | `php artisan queue:work` | sends broadcast events to Reverb |
+| Queue worker | `php artisan queue:work` | sends broadcast events to Reverb and updates the search index |
 | Reverb | `php artisan reverb:start` | WebSocket server for real-time notifications |
 | Database | MySQL 8 | data, sessions, cache and the job queue |
 
@@ -16,7 +16,7 @@ There are no scheduled tasks, so no cron entry is needed.
 
 ## Server requirements
 
-- PHP 8.3 or newer, with the extensions Laravel requires plus `pdo_mysql` and `curl`
+- PHP 8.4 or newer, with the extensions Laravel requires plus `pdo_mysql` and `curl`
 - Composer 2
 - Node.js 22 LTS or newer, only to build the frontend; it can run in CI instead of on the server
 - MySQL 8

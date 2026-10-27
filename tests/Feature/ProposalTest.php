@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Proposal;
+use App\Models\Review;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -127,6 +128,22 @@ it('hides a proposal from other speakers', function () {
     $this->actingAs(User::factory()->create())
         ->getJson("/api/proposals/{$proposal->id}")
         ->assertForbidden();
+});
+
+it('does not expose other users\' emails', function () {
+    $proposal = Proposal::factory()->create();
+    Review::factory()->for($proposal)->create();
+    $this->actingAs(User::factory()->reviewer()->create());
+
+    $this->getJson('/api/proposals')
+        ->assertOk()
+        ->assertJsonPath('data.0.speaker.name', $proposal->user->name)
+        ->assertJsonMissingPath('data.0.speaker.email');
+
+    $this->getJson("/api/proposals/{$proposal->id}")
+        ->assertOk()
+        ->assertJsonMissingPath('data.speaker.email')
+        ->assertJsonMissingPath('data.reviews.0.reviewer.email');
 });
 
 it('returns 404 for a missing proposal', function () {

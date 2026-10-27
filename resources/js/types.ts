@@ -3,7 +3,7 @@ export type Role = 'speaker' | 'reviewer' | 'admin';
 export interface User {
     id: number;
     name: string;
-    email: string;
+    email?: string;
     role: Role;
 }
 

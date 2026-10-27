@@ -111,6 +111,9 @@ All rules are in `ProposalPolicy` and are attached to routes with `->can()`. Con
 - **Title search** uses Laravel Scout. `Proposal::search($q)->take(1000)->keys()` returns matching IDs, and `whereKey(...)` feeds them into the normal Eloquent query.
   - The other filters, role scoping, eager loading and pagination therefore stay in SQL, the same for every search driver.
   - `take(1000)` is needed because Algolia returns 20 hits by default.
+- **Indexing is queued and runs after commit** (`queue` and `after_commit` in `config/scout.php`):
+  - a slow or unavailable Algolia cannot hold a database transaction open or fail a submission;
+  - a proposal whose transaction rolls back never reaches the index.
 - **Drivers:**
   - `database` works out of the box (`LIKE`);
   - `algolia` gives typo-tolerant search when keys are set;
