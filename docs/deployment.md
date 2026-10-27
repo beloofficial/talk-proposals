@@ -66,7 +66,7 @@ VITE_REVERB_SCHEME=https
 ## First deployment
 
 ```bash
-git clone <repository-url> /var/www/talk-proposals
+git clone https://github.com/beloofficial/talk-proposals.git /var/www/talk-proposals
 cd /var/www/talk-proposals
 cp .env.example .env            # then edit it as above
 composer install --no-dev --optimize-autoloader --no-interaction

@@ -37,7 +37,7 @@ If one is taken, override it in `.env` with `APP_PORT`, `FORWARD_DB_PORT`, `VITE
 ## Quick start
 
 ```bash
-git clone <repository-url> talk-proposals
+git clone https://github.com/beloofficial/talk-proposals.git
 cd talk-proposals
 make setup
 ```
